@@ -83,13 +83,24 @@ then open `http://localhost:8080`.
 
 ### Deterministic friction flow (for reproducible session replays)
 
-A new signup always gets the control experience: a hard 3-message cap. After
-the 3rd `Message Sent` + `AI Response Received` pair, the next send attempt
-shows a brief "out of free messages" state and navigates to `/upgrade`.
-Every time, `Cancel` on `/upgrade` fires `Upgrade Abandoned` and returns to a
-still-capped chat (the next send re-triggers the wall); `Continue` fires
-`Plan Upgraded` and unlocks unlimited messages. Starting a trial (`/trial`)
-or logging in (`/login`) removes the cap for the rest of the session.
+After signup the user lands on `/chat` first, so `Home Page Viewed` fires
+**before** `Trial Started` (matching the data funnel). Chatting is gated: a
+fresh signup sees a "Start your free trial to begin chatting" plan gate instead
+of an input, and any attempt to chat routes to `/trial`. On `/trial` the only
+way forward is **Start Free Trial** (no skip), which fires `Trial Started` and
+returns to `/chat`. The trial does **not** lift the message cap: after the 3rd
+`Message Sent` + `AI Response Received` pair, the next send shows a brief "out
+of free messages" state and navigates to `/upgrade`. Every time, `Cancel` on
+`/upgrade` fires `Upgrade Abandoned` and returns to a still-capped chat (the
+next send re-triggers the wall); `Continue` fires `Plan Upgraded` and unlocks
+unlimited messages.
+
+This yields the funnel used by the generated data: **App Opened → Signed Up →
+Home Page Viewed → Trial Started → Plan Upgraded**, with the drop-off between
+Trial Started and Plan Upgraded (the mid-chat upgrade wall).
+
+Logging in (`/login`) is the friction-free returning-user path: it goes
+straight to `/chat` with no cap and no plan gate, and does not fire `Signed Up`.
 
 `/upgrade-v2` never enforces the cap and never fires `Upgrade Abandoned` — it
 exists purely as a demo artifact for comparing the non-blocking treatment

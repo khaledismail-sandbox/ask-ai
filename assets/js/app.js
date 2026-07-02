@@ -3,7 +3,9 @@
 (function () {
   var appEl = document.getElementById('app');
   var PROTECTED = ['/chat', '/trial', '/upgrade', '/upgrade-v2'];
-  var DEEPEST_STEP_MAP = { '/': 1, '/signup': 2, '/login': 2, '/chat': 3, '/trial': 4, '/upgrade': 4, '/upgrade-v2': 4 };
+  // Funnel order matches the generated data: App Opened → Signed Up →
+  // Home Page Viewed (chat) → Trial Started (trial) → Plan Upgraded (upgrade).
+  var DEEPEST_STEP_MAP = { '/': 1, '/signup': 2, '/login': 2, '/chat': 3, '/trial': 4, '/upgrade': 5, '/upgrade-v2': 5 };
 
   var currentRoute = '/';
   var ui = {
@@ -22,9 +24,20 @@
   // ---------- helpers ----------
   function isCapped(state) {
     if (state.isReturning) return false;
+    if (state.plan_tier === 'standard' || state.plan_tier === 'premium') return false;
+    // Free trial does NOT lift the cap: trial users still hit the 3-message wall,
+    // which drives the friction story into /upgrade.
+    return state.messageCount >= 3;
+  }
+
+  // A fresh signup must choose a plan (start the free trial) before chatting. This
+  // keeps Home Page Viewed firing BEFORE Trial Started, matching the data funnel:
+  // App Opened → Signed Up → Home Page Viewed → Trial Started → Plan Upgraded.
+  function needsPlan(state) {
+    if (state.isReturning) return false;
     if (state.trialActive) return false;
     if (state.plan_tier === 'standard' || state.plan_tier === 'premium') return false;
-    return state.messageCount >= 3;
+    return true;
   }
 
   function computeChatEntry(state) {
@@ -65,7 +78,7 @@
         if (fireEvents) {
           Analytics.track('Home Page Viewed', { entry: computeChatEntry(state) });
         }
-        Views.chat(appEl, state, ui);
+        Views.chat(appEl, state, ui, needsPlan(state));
         break;
       case '/trial':
         Views.trial(appEl, state);
@@ -109,6 +122,13 @@
 
     var state = State.get();
     var bypassCap = route === '/upgrade-v2';
+
+    // On the chat home, a fresh signup can't chat until they start the trial —
+    // route them to the plan choice instead of sending.
+    if (route === '/chat' && needsPlan(state)) {
+      App.navigate('/trial');
+      return;
+    }
 
     if (!bypassCap && isCapped(state)) {
       ui.wallToast = true;
@@ -220,6 +240,8 @@
       State.save(state);
       Analytics.setUser(state.userId);
       Analytics.track('Signed Up', { signup_method: method, is_referral: Math.random() < 0.15 });
+      // Land on the chat home first (fires Home Page Viewed). Chatting itself is
+      // gated until the user starts the trial — see needsPlan / the plan gate.
       App.navigate('/chat');
     },
 

@@ -163,8 +163,21 @@
       '</div>';
   }
 
-  function renderChat(container, state, ui) {
+  function buildPlanGate() {
+    return '' +
+      '<div class="plan-gate">' +
+        '<p class="plan-gate-msg">🎁 Start your free trial to begin chatting</p>' +
+        '<button class="btn btn-primary" onclick="App.navigate(\'/trial\')">Choose a plan</button>' +
+      '</div>';
+  }
+
+  function renderChat(container, state, ui, gated) {
     var showSuggestions = state.messages.length === 0;
+    // A fresh signup lands here (fires Home Page Viewed) but can't chat until they
+    // start the trial: the input is replaced by a plan gate that routes to /trial.
+    var footer = gated
+      ? buildPlanGate()
+      : buildInputBar({ route: '/chat', sending: ui.sending });
     var html = '<div class="screen">' +
       buildChatHeader(state, { settingsOpen: ui.settingsOpen }) +
       '<div class="screen-scroll" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">' +
@@ -172,7 +185,7 @@
         buildThread(state, ui) +
       '</div>' +
       (ui.wallToast ? '<div class="wall-toast">✋ You\'re out of free messages — redirecting you to upgrade…</div>' : '') +
-      buildInputBar({ route: '/chat', sending: ui.sending }) +
+      footer +
       '</div>';
     container.innerHTML = html;
     scrollThreadToBottom();
@@ -215,7 +228,6 @@
             '<p>Try everything free for 7 days, cancel anytime.</p>' +
           '</div>' +
           '<div class="bullet-list">' +
-            '<div class="bullet-item"><span class="bullet-emoji">♾️</span><span>Unlimited messages, every day</span></div>' +
             '<div class="bullet-item"><span class="bullet-emoji">⚡</span><span>Priority access to our fastest, most advanced model</span></div>' +
             '<div class="bullet-item"><span class="bullet-emoji">🖼️</span><span>Ad-free, distraction-free chat</span></div>' +
             '<div class="bullet-item"><span class="bullet-emoji">💬</span><span>Priority support when you need help</span></div>' +
@@ -232,9 +244,6 @@
         '<div class="trial-footer">' +
           '<button class="btn btn-primary" onclick="App.trialStart()">Start Free Trial</button>' +
           '<p class="reassurance">🔒 No payment due now</p>' +
-          '<div style="text-align:center;margin-top:10px;">' +
-            '<a class="link-inline" style="color:#9a9aac;" onclick="App.navigate(\'/chat\')">Not now</a>' +
-          '</div>' +
         '</div>' +
       '</div>';
   }
