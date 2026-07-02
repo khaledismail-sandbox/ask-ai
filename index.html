@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ask AI — Chat Assistant Demo</title>
+<meta name="description" content="Ask AI — a GPT-style chat assistant demo instrumented with Amplitude.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="assets/css/style.css">
+<script>
+  // Single Page Apps for GitHub Pages — restore step.
+  // If 404.html redirected here with the real path encoded in the query string,
+  // rewrite the URL back to the real path before any app code runs.
+  (function (l) {
+    if (l.search[1] === '/') {
+      var decoded = l.search.slice(1).split('&').map(function (s) {
+        return s.replace(/~and~/g, '&');
+      }).join('?');
+      window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash);
+    }
+  }(window.location));
+</script>
+</head>
+<body>
+  <div class="phone-frame">
+    <div class="phone-notch"></div>
+    <div id="app" class="app-screen" role="main"></div>
+    <div class="phone-home-indicator"></div>
+  </div>
+
+  <!-- Amplitude Browser SDK 2.x + Session Replay plugin, loaded from CDN. No npm, no build step. -->
+  <script src="https://cdn.amplitude.com/libs/analytics-browser-2.44.1-min.js.gz"></script>
+  <script src="https://cdn.amplitude.com/libs/plugin-session-replay-browser-1.32.1-min.js.gz"></script>
+
+  <script src="assets/js/state.js"></script>
+  <script src="assets/js/analytics.js"></script>
+  <script src="assets/js/chatdata.js"></script>
+  <script src="assets/js/router.js"></script>
+  <script src="assets/js/views.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ask AI</title>
+<script>
+  // Single Page Apps for GitHub Pages — https://github.com/rafgraph/spa-github-pages
+  // Auto-detects whether this is served from a GitHub Pages *project* site
+  // (https://user.github.io/repo/...) or a user/org site or custom domain,
+  // so it works without hardcoding the repo name.
+  (function () {
+    var l = window.location;
+    var knownRoutes = ['signup', 'login', 'chat', 'trial', 'upgrade', 'upgrade-v2'];
+    var segments = l.pathname.split('/').filter(Boolean);
+    var pathSegmentsToKeep = 0;
+
+    if (/\.github\.io$/.test(l.hostname) && segments.length > 0 && knownRoutes.indexOf(segments[0]) === -1) {
+      // First segment isn't a known app route, so it's most likely the repo name
+      // on a project page (user.github.io/repo/...) — keep it as the base path.
+      pathSegmentsToKeep = 1;
+    }
+
+    l.replace(
+      l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+      l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+      l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+      (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+      l.hash
+    );
+  })();
+</script>
+</head>
+<body>
+</body>
+</html>
