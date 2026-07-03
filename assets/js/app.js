@@ -57,6 +57,19 @@
     return route;
   }
 
+  // The treatment (/upgrade-v2) is a demo artifact meant to be opened cold by
+  // pasting the URL in front of an audience. Rather than bouncing to onboarding,
+  // provision a throwaway demo identity so it renders straight away. It's still
+  // never linked or auto-routed from the app.
+  function ensureDemoIdentity(state) {
+    if (!state.userId) {
+      state.userId = State.buildUserId('');
+      Analytics.setUser(state.userId);
+    }
+    state.signedUp = true;
+    State.save(state);
+  }
+
   function updateDeepestStep(route, state) {
     var step = DEEPEST_STEP_MAP[route] || 1;
     state.deepestStep = Math.max(state.deepestStep, step);
@@ -95,6 +108,11 @@
   // Entering a route (via navigation): resets ephemeral UI + fires route-entry events.
   function renderForNavigation(route) {
     var state = State.get();
+    // Let the treatment URL open cold (pasted) without the signup gate — provision
+    // a throwaway demo identity so /upgrade-v2 renders instead of bouncing to onboarding.
+    if (route === '/upgrade-v2' && !state.signedUp) {
+      ensureDemoIdentity(state);
+    }
     var effective = guardRoute(route, state);
     updateDeepestStep(effective, state);
     currentRoute = effective;
